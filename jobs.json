@@ -1,0 +1,480 @@
+{
+  "44709a3a-b48f-423b-a523-a70fdfb9e1f8": {
+    "id": "44709a3a-b48f-423b-a523-a70fdfb9e1f8",
+    "status": "completed",
+    "createdAt": 1764942684146,
+    "result": {
+      "events": [
+        {
+          "id": "ecf3fc88-b747-4e2d-860e-debbd5006be2",
+          "timestamp": "2025-12-05T13:51:25.174Z",
+          "source": "unknown",
+          "actor": "uploader",
+          "type": "raw",
+          "tags": [],
+          "content_snippet": "-"
+        }
+      ],
+      "info": {
+        "detected": "raw"
+      }
+    }
+  },
+  "863ea9d4-d24a-48e4-b2e6-5542fbb1a089": {
+    "id": "863ea9d4-d24a-48e4-b2e6-5542fbb1a089",
+    "status": "completed",
+    "createdAt": 1764942765912,
+    "result": {
+      "events": [
+        {
+          "id": "51d040e2-c9ec-426d-bf00-84375590f964",
+          "timestamp": "2025-12-05T13:52:46.928Z",
+          "source": "unknown",
+          "actor": "uploader",
+          "type": "raw",
+          "tags": [],
+          "content_snippet": "-"
+        }
+      ],
+      "info": {
+        "detected": "raw"
+      }
+    }
+  },
+  "d36768ef-6966-4e52-ab4e-73410a1018f4": {
+    "id": "d36768ef-6966-4e52-ab4e-73410a1018f4",
+    "status": "failed",
+    "createdAt": 1764942865242,
+    "error": "Invalid time value"
+  },
+  "7181d8e9-b838-4fce-bee5-cc764c70fac7": {
+    "id": "7181d8e9-b838-4fce-bee5-cc764c70fac7",
+    "status": "completed",
+    "createdAt": 1764943071938,
+    "result": {
+      "events": [],
+      "info": {
+        "detected": "git"
+      }
+    }
+  },
+  "4aa69276-6eb7-434b-8d79-4e4d1637c418": {
+    "id": "4aa69276-6eb7-434b-8d79-4e4d1637c418",
+    "status": "completed",
+    "createdAt": 1764943176090,
+    "result": {
+      "events": [
+        {
+          "id": "16fb52f4-5e52-4a69-9208-c56eb02e4cc9",
+          "timestamp": "2025-12-03T18:59:30.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Add delete user function"
+        },
+        {
+          "id": "baaff30a-cdef-4d5b-bf31-dff1461c2ea5",
+          "timestamp": "2025-12-03T18:54:06.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Add delete user function"
+        },
+        {
+          "id": "5edf8833-baeb-42ec-b1a4-cadbe2ea50ca",
+          "timestamp": "2025-12-03T18:15:05.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Add profile page"
+        },
+        {
+          "id": "b84a13a4-a4a3-4c54-90fa-6cc3ecbd0aed",
+          "timestamp": "2025-12-03T16:38:04.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Add heatmaps to map"
+        },
+        {
+          "id": "dc99dfe8-9f99-4daa-a036-772126ab6983",
+          "timestamp": "2025-12-03T16:12:47.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "bugfix"
+          ],
+          "content_snippet": "Fixed the admin and public dashboard"
+        },
+        {
+          "id": "bd2dad49-f3f7-4147-9afa-b80588681d60",
+          "timestamp": "2025-12-03T15:51:44.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "bugfix"
+          ],
+          "content_snippet": "Fixed the admin and public dashboard"
+        },
+        {
+          "id": "f596d5d2-8e18-4838-920d-8908c2f9ab85",
+          "timestamp": "2025-12-03T07:19:57.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Updated the map for geolocation"
+        },
+        {
+          "id": "2e887778-2bf9-49d6-94bc-f113665745d1",
+          "timestamp": "2025-12-03T06:33:14.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Updated the map for geolocation"
+        },
+        {
+          "id": "50fc95b8-a103-4bb2-9e4e-b4178e9cca51",
+          "timestamp": "2025-11-30T10:30:14.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "bugfix"
+          ],
+          "content_snippet": "Fix the dashboard issue"
+        },
+        {
+          "id": "f9317022-d41a-4908-b637-793ab490e4bc",
+          "timestamp": "2025-11-30T10:09:51.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Force add sharp-linux-x64 dependency"
+        },
+        {
+          "id": "f8ddffaf-1ccc-4455-8017-1bed44e380c1",
+          "timestamp": "2025-11-30T10:06:33.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Regenerate lockfile with Linux support for sharp"
+        },
+        {
+          "id": "7e5332de-9645-4137-9d67-7eb364fb6b39",
+          "timestamp": "2025-11-30T10:02:37.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "bugfix"
+          ],
+          "content_snippet": "Remove outdated pnpm-lock.yaml to fix Vercel build"
+        },
+        {
+          "id": "9f303c43-c4b2-4d07-821b-ffe124f21f8e",
+          "timestamp": "2025-11-30T10:01:01.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "bugfix"
+          ],
+          "content_snippet": "Add function to dashboard (fixed)"
+        },
+        {
+          "id": "06938f81-7ff2-4871-b120-6b217908195f",
+          "timestamp": "2025-11-27T17:42:52.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "bugfix"
+          ],
+          "content_snippet": "Fix pnpm lockfile for Vercel deployment"
+        },
+        {
+          "id": "88edc12d-177c-42fe-a763-c0fe8f5d7112",
+          "timestamp": "2025-11-27T17:39:50.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Added ml model to detect the billboard"
+        },
+        {
+          "id": "b0e50196-2bf0-43cd-a5d0-e85c8a352371",
+          "timestamp": "2025-11-26T17:32:41.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Update signout function"
+        },
+        {
+          "id": "814863ea-b560-4044-80dc-d37bb96c145f",
+          "timestamp": "2025-11-26T17:13:37.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Update signout function"
+        },
+        {
+          "id": "069bfe7a-6115-474a-8bd0-b526bf7c3b89",
+          "timestamp": "2025-11-26T12:01:17.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Add backend database for login/signup"
+        },
+        {
+          "id": "e208a37f-93b1-41d3-9e52-3e1ec4e2ed67",
+          "timestamp": "2025-11-26T11:55:05.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Add backend database for login/signup"
+        },
+        {
+          "id": "a2b2b74b-c6e7-4c68-9680-bdee2cfaf139",
+          "timestamp": "2025-09-10T03:33:32.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "update_backend"
+        },
+        {
+          "id": "d97f433d-3cd0-4364-b44f-18222ce0c6e7",
+          "timestamp": "2025-09-09T08:07:13.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "bugfix"
+          ],
+          "content_snippet": "Fix_the_violation_rules"
+        },
+        {
+          "id": "a4574892-5c5a-43ce-9729-5ba04dcafe30",
+          "timestamp": "2025-09-09T05:31:15.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "update_backend"
+        },
+        {
+          "id": "1eb21752-8b1c-40b6-867b-af1c115fffd5",
+          "timestamp": "2025-09-08T11:20:33.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Ready for deployment"
+        },
+        {
+          "id": "a1aada9d-b579-4709-bb65-c78696c45eaa",
+          "timestamp": "2025-09-08T11:08:49.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Ready for deployment"
+        },
+        {
+          "id": "321e1dc8-932a-4972-89e1-11bae00bad8a",
+          "timestamp": "2025-09-08T10:51:10.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Ready for deployment"
+        },
+        {
+          "id": "8ce6956f-e524-4d24-bacc-e9f2dfa6d82a",
+          "timestamp": "2025-09-08T10:11:36.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Ready for deployment"
+        },
+        {
+          "id": "e73561c7-a829-4d99-860f-cfe6edba8593",
+          "timestamp": "2025-08-24T10:42:14.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Merge pull request #1 from Anupam0-0/main"
+        },
+        {
+          "id": "173a19b1-25e1-4397-b89d-ed4ac6f3c5d1",
+          "timestamp": "2025-08-24T09:30:57.000Z",
+          "source": "git",
+          "actor": "Anupam Choudhary",
+          "type": "code.commit",
+          "tags": [
+            "bugfix"
+          ],
+          "content_snippet": "deployment issue fixed"
+        },
+        {
+          "id": "4f382316-cf1a-4d09-aede-a243d232e4d5",
+          "timestamp": "2025-08-24T06:22:52.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "."
+        },
+        {
+          "id": "13ad7174-d83e-4746-8bbe-fad29e7ff339",
+          "timestamp": "2025-08-24T06:00:15.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Update README.md"
+        },
+        {
+          "id": "a59283ef-7ce5-49be-aacc-e61520511ec1",
+          "timestamp": "2025-08-24T05:58:30.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Update README.md"
+        },
+        {
+          "id": "6100af7f-3d40-4b53-bc90-3fdd6431936a",
+          "timestamp": "2025-08-24T05:57:15.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Update README.md"
+        },
+        {
+          "id": "887a255c-0101-4c06-b56f-9c024964312e",
+          "timestamp": "2025-08-24T05:56:47.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Update README.md"
+        },
+        {
+          "id": "dd777bd8-bdaa-4571-8e7d-f3de62cb39b4",
+          "timestamp": "2025-08-24T05:53:37.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "bugfix"
+          ],
+          "content_snippet": "Fix_login_redirection_and_add_logout/home_buttons_to_admin_dashboard"
+        },
+        {
+          "id": "f0417d7e-df1e-4fd3-b244-6591b0a93835",
+          "timestamp": "2025-08-23T18:30:27.000Z",
+          "source": "git",
+          "actor": "darknight08zz",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Updated"
+        },
+        {
+          "id": "13f0c58c-ce9d-4bf1-8e35-d6023fa9523c",
+          "timestamp": "2025-08-23T18:00:35.000Z",
+          "source": "git",
+          "actor": "v0",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "chore: sync main changes to unauth-biilboard"
+        },
+        {
+          "id": "08aa1ed1-4cce-4ae8-9db3-117c2239738a",
+          "timestamp": "2025-08-23T18:00:03.000Z",
+          "source": "git",
+          "actor": "v0",
+          "type": "code.commit",
+          "tags": [
+            "feature"
+          ],
+          "content_snippet": "Initialized repository for project billboarddetectionandreportingm"
+        }
+      ],
+      "info": {
+        "detected": "git"
+      }
+    }
+  }
+}

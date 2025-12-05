@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Globals */
+html,
+body,
+#__next {
+    height: 100%;
+}
+
+body {
+    background-color: #f8fafc;
+
+    /* Slate-50 */
+    color: #1e293b;
+    /* Slate-800 */
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbar for Legend */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 20px;
+}
+
+/* Print Styles for PDF Export */
+@media print {
+
+    /* Hide Sidebar/Filters, Header, Upload Panel, Buttons */
+    aside,
+    header,
+    footer,
+    .bg-white.dark\:bg-slate-800.p-4.rounded-xl.shadow-sm.border.border-slate-200.dark\:border-slate-700,
+    /* Upload Panel container */
+    button {
+        display: none !important;
+    }
+
+    /* Expand main content */
+    .lg\:col-span-2 {
+        grid-column: span 3 / span 3 !important;
+        width: 100% !important;
+    }
+
+    /* Ensure background colors print */
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        background-color: white !important;
+    }
+
+    .bg-white {
+        box-shadow: none !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+}
