@@ -69,7 +69,7 @@ export default function Heatmap({ matrix, events = [], onCellClick, theme = "lig
     // Color scale
     const colorScale = scaleLinear<string>({
         domain: [0, max],
-        range: theme === "dark" ? ["#1e293b", "#818cf8"] : ["#f1f5f9", "#4f46e5"], // slate-800 to indigo-400 (dark) vs slate-100 to indigo-600 (light)
+        range: theme === "dark" ? ["#334155", "#22c55e"] : ["#f1f5f9", "#4f46e5"], // slate-700 to green-500 (dark) vs slate-100 to indigo-600 (light)
     });
 
     const xScale = useMemo(() => scaleLinear({
@@ -96,8 +96,8 @@ export default function Heatmap({ matrix, events = [], onCellClick, theme = "lig
     }, [matrix]);
 
     return (
-        <div className="overflow-x-auto pb-2">
-            <div style={{ minWidth: width }}>
+        <div className="overflow-x-auto pb-2 border border-slate-200 dark:border-slate-700 rounded-lg">
+            <div style={{ minWidth: width, maxHeight: "800px", overflowY: "auto" }} className="custom-scrollbar">
                 <svg width={width} height={height} ref={containerRef}>
                     <Group top={margin.top} left={margin.left}>
                         {/* X Axis Labels */}
@@ -114,72 +114,70 @@ export default function Heatmap({ matrix, events = [], onCellClick, theme = "lig
                             </text>
                         ))}
 
-                        {/* Y Axis Labels */}
-                        {matrix.map((_, dayIdx) => (
-                            <text
-                                key={dayIdx}
-                                x={-10}
-                                y={dayIdx * (cellHeight + gap) + cellHeight / 2}
-                                dy=".32em"
-                                textAnchor="end"
-                                fontSize={10}
-                                fill={theme === "dark" ? "#cbd5e1" : "#64748b"}
-                                fontFamily="monospace"
-                            >
-                                {formatDateDaysAgo(dayIdx)}
-                            </text>
-                        ))}
+                        {/* Y Axis Labels - Conditionally render to avoid clutter on large ranges */}
+                        {matrix.map((_, dayIdx) => {
+                            // If more than 60 days, show only mondays (or every 7th day)
+                            if (matrix.length > 60 && dayIdx % 7 !== 0) return null;
 
-                        <HeatmapRect
-                            data={data}
-                            xScale={xScale}
-                            yScale={yScale}
-                            colorScale={colorScale}
-                            binWidth={cellWidth}
-                            binHeight={cellHeight}
-                            gap={gap}
-                        >
-                            {heatmap =>
-                                heatmap.map(heatmapBins =>
-                                    heatmapBins.map(bin => {
-                                        const { count, dayIdx, hour } = bin.bin as any;
-                                        return (
-                                            <rect
-                                                key={`heatmap-rect-${bin.row}-${bin.column}`}
-                                                width={bin.width}
-                                                height={bin.height}
-                                                x={bin.x}
-                                                y={bin.y}
-                                                fill={bin.color}
-                                                rx={2}
-                                                style={{
-                                                    cursor: count > 0 ? 'pointer' : 'default',
-                                                    opacity: count === 0 ? 1 : Math.max(0.3, count / max)
-                                                }}
-                                                onClick={() => {
-                                                    if (count > 0 && onCellClick) {
-                                                        onCellClick(dayIdx, hour);
-                                                    }
-                                                }}
-                                                onMouseEnter={(e) => {
-                                                    const { tags, count: c } = getCellDetails(events, dayIdx, hour);
-                                                    const title = c > 0
-                                                        ? `${c} events${tags.length ? `\nTop tags: ${tags.join(", ")}` : ""}`
-                                                        : `${count} events at ${hour}:00`;
+                            return (
+                                <text
+                                    key={dayIdx}
+                                    x={-10}
+                                    y={dayIdx * (cellHeight + gap) + cellHeight / 2}
+                                    dy=".32em"
+                                    textAnchor="end"
+                                    fontSize={10}
+                                    fill={theme === "dark" ? "#cbd5e1" : "#64748b"}
+                                    fontFamily="monospace"
+                                >
+                                    {formatDateDaysAgo(dayIdx)}
+                                </text>
+                            );
+                        })}
 
-                                                    showTooltip({
-                                                        tooltipData: { title },
-                                                        tooltipLeft: e.clientX,
-                                                        tooltipTop: e.clientY,
-                                                    });
-                                                }}
-                                                onMouseLeave={hideTooltip}
-                                            />
-                                        );
-                                    })
-                                )
-                            }
-                        </HeatmapRect>
+                        {/* Grid of Rectangles */}
+                        {matrix.map((row, dayIdx) =>
+                            row.map((count, hour) => {
+                                const x = hour * (cellWidth + gap);
+                                const y = dayIdx * (cellHeight + gap);
+                                // Opacity: 0 count = 1 (opaque base), positive = scaled
+                                const opacity = count === 0 ? 1 : Math.max(0.4, count / max);
+
+                                // Get details for tooltip
+                                const tooltipTitle = () => {
+                                    const { tags, count: c } = getCellDetails(events, dayIdx, hour);
+                                    return c > 0
+                                        ? `${c} events${tags.length ? `\nTop tags: ${tags.join(", ")}` : ""}`
+                                        : `${count} events at ${hour}:00`;
+                                };
+
+                                return (
+                                    <rect
+                                        key={`cell-${dayIdx}-${hour}`}
+                                        width={cellWidth}
+                                        height={cellHeight}
+                                        x={x}
+                                        y={y}
+                                        fill={colorScale(count)}
+                                        rx={2}
+                                        style={{ opacity, cursor: count > 0 ? "pointer" : "default" }}
+                                        onClick={() => {
+                                            if (count > 0 && onCellClick) {
+                                                onCellClick(dayIdx, hour);
+                                            }
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            showTooltip({
+                                                tooltipData: { title: tooltipTitle() },
+                                                tooltipLeft: e.clientX,
+                                                tooltipTop: e.clientY,
+                                            });
+                                        }}
+                                        onMouseLeave={hideTooltip}
+                                    />
+                                );
+                            })
+                        )}
                     </Group>
                 </svg>
 

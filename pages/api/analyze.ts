@@ -61,14 +61,51 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         Daily Activity:
         ${JSON.stringify(summaryObj, null, 2)}
 
-        Please provide a concise but insightful analysis in Markdown format (use bullet points, bold text).
-        Focus on:
-        1. **Productivity Trends**: identifying peak days and slow days.
-        2. **Work/Life Balance**: Are they working consistently or in bursts?
-        3. **Source Distribution**: Where are they spending most of their time?
-        4. **Suggestions**: One or two checks for burnout or efficiency.
+        Analyze this productivity data (daily event counts by source) and provide a professional, encouraging, and actionable report.
+        
+        Format the response in cleanly structured Markdown. Use short bullet points and avoid long paragraphs.
+        
+        ### **📊 Executive Summary**
+        **[5-6 bullet points. Very concise overview.]**
+        
+        
+        
+        ### **📈 Key Trends**
+        - **Peak Performance**: [Day/Time]
+        - **Work-Life Balance**: [1 sentence observation]
+        - **Focus**: [Code vs Chat]
+        - **Consistency**: [Daily/Weekly patterns]
+        - **Collaboration**: [Interaction with others based on communication events]
+        - **Deep Work Periods**: [Observations on sustained activity in specific sources]
 
-        Keep the tone professional yet encouraging.
+
+
+
+        ### **📈 Key Trends**
+        - **Peak Performance**: [Day/Time]
+        - **Work-Life Balance**: [1 sentence observation]
+        - **Focus**: [Code vs Chat]
+        - **Consistency**: [Daily/Weekly patterns]
+        - **Collaboration**: [Interaction with others based on communication events]
+        - **Deep Work Periods**: [Observations on sustained activity in specific sources]
+
+
+
+        ### **📊 Key Insights**
+        - [Insight 1]
+        - [Insight 2]
+        - [Insight 3]
+        - [Insight 4]
+        - [Insight 5]
+        - [Insight 6]
+        
+
+        
+        ### **💡 Recommendations**
+        - [Actionable Tip 1]
+        - [Actionable Tip 2]
+        - [Actionable Tip 3]
+        - [Actionable Tip 4]
         `;
 
         const result = await model.generateContent(prompt);

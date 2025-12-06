@@ -1,5 +1,11 @@
-import { v4 as uuidv4 } from "uuid";
+import { createHash } from "crypto";
 import { EventItem } from "./mockData";
+
+// Helper to generate deterministic ID based on content
+function generateEventId(source: string, timestamp: string, actor: string, content: string): string {
+    const data = `${source}|${timestamp}|${actor}|${content}`;
+    return createHash("sha256").update(data).digest("hex");
+}
 
 export function parseGitLogText(text: string): EventItem[] {
     // Expect lines like: <hash>|<author>|<iso-timestamp>|<message>
@@ -15,7 +21,7 @@ export function parseGitLogText(text: string): EventItem[] {
             const d = new Date(iso);
             if (!isNaN(d.getTime())) {
                 events.push({
-                    id: uuidv4(),
+                    id: hash || generateEventId("git", d.toISOString(), author || "unknown", message), // Use git hash if available
                     timestamp: d.toISOString(),
                     source: "git",
                     actor: author || "unknown",
@@ -34,7 +40,7 @@ export function parseGitLogText(text: string): EventItem[] {
             const d = new Date(iso);
             if (!isNaN(d.getTime())) {
                 events.push({
-                    id: uuidv4(),
+                    id: hash || generateEventId("git", d.toISOString(), author || "unknown", msg),
                     timestamp: d.toISOString(),
                     source: "git",
                     actor: author || "unknown",
@@ -72,14 +78,16 @@ export function parseWhatsAppText(text: string): EventItem[] {
                 dt = new Date(swapped);
             }
             if (!isNaN(dt.getTime())) {
+                const cleanSender = sender.trim();
+                const cleanMsg = message.slice(0, 300);
                 events.push({
-                    id: uuidv4(),
+                    id: generateEventId("whatsapp", dt.toISOString(), cleanSender, cleanMsg),
                     timestamp: dt.toISOString(),
                     source: "whatsapp",
-                    actor: sender.trim(),
+                    actor: cleanSender,
                     type: "chat.message",
                     tags: /study|session|exam|revision|homework/i.test(message) ? ["study"] : [],
-                    content_snippet: message.slice(0, 300),
+                    content_snippet: cleanMsg,
                 });
                 continue;
             }
@@ -87,6 +95,10 @@ export function parseWhatsAppText(text: string): EventItem[] {
         // Could be a continuation line (multi-line message) — naive append to previous event
         if (events.length > 0) {
             events[events.length - 1].content_snippet += " " + line.slice(0, 200);
+            // Re-hash ID if content changes? ideally yes, but simplistic append makes it hard.
+            // For now, let's accept that multiline might not change hash, or we re-hash.
+            // Actually, we can't easily re-hash without rebuilding. 
+            // Better to rely on the first line for uniqueness or accept small issue.
         }
     }
 
@@ -113,15 +125,17 @@ export function parseSlackJson(text: string): EventItem[] {
         // Slack ts is "1234567890.123456"
         const tsMillis = parseFloat(msg.ts) * 1000;
         const dt = new Date(tsMillis);
+        const actor = msg.user_profile?.real_name || msg.user || "unknown";
+        const content = (msg.text || "").slice(0, 300);
 
         events.push({
-            id: uuidv4(),
+            id: generateEventId("slack", dt.toISOString(), actor, content),
             timestamp: dt.toISOString(),
             source: "slack",
-            actor: msg.user_profile?.real_name || msg.user || "unknown", // user is ID, need profile for name usually, but fallback ok
+            actor: actor, // user is ID, need profile for name usually, but fallback ok
             type: "chat.message",
             tags: [],
-            content_snippet: (msg.text || "").slice(0, 300)
+            content_snippet: content
         });
     }
     return events;
@@ -143,7 +157,7 @@ export function parseDiscordJson(text: string): EventItem[] {
     for (const msg of messages) {
         // Check for common fields
         const dateStr = msg.timestamp || msg.date;
-        const content = msg.content || "";
+        const content = (msg.content || "").slice(0, 300);
         const authorName = msg.author?.name || msg.author?.username || msg.author || "unknown";
 
         if (!dateStr) continue;
@@ -152,13 +166,13 @@ export function parseDiscordJson(text: string): EventItem[] {
         if (isNaN(dt.getTime())) continue;
 
         events.push({
-            id: uuidv4(),
+            id: generateEventId("discord", dt.toISOString(), authorName, content),
             timestamp: dt.toISOString(),
             source: "discord",
             actor: authorName,
             type: "chat.message",
             tags: [],
-            content_snippet: content.slice(0, 300)
+            content_snippet: content
         });
     }
     return events;
@@ -181,21 +195,25 @@ export function parseTelegramJson(text: string): EventItem[] {
         if (msg.type !== "message" || !msg.date || !msg.text) continue;
 
         // msg.text can be a string or array of entities. Flatten it.
-        const content = Array.isArray(msg.text)
+        const contentRaw = Array.isArray(msg.text)
             ? msg.text.map((t: any) => typeof t === 'string' ? t : t.text).join("")
             : msg.text;
+
+        const content = (contentRaw || "").slice(0, 300);
 
         const dt = new Date(msg.date);
         if (isNaN(dt.getTime())) continue;
 
+        const actor = msg.from || "unknown";
+
         events.push({
-            id: uuidv4(),
+            id: generateEventId("telegram", dt.toISOString(), actor, content),
             timestamp: dt.toISOString(),
             source: "telegram",
-            actor: msg.from || "unknown",
+            actor: actor,
             type: "chat.message",
             tags: [],
-            content_snippet: (content || "").slice(0, 300)
+            content_snippet: content
         });
     }
     return events;
@@ -247,15 +265,16 @@ export function parseIcsText(text: string): EventItem[] {
 
         const summary = summaryMatch ? summaryMatch[1].trim() : "Untitled Event";
         const description = descriptionMatch ? descriptionMatch[1].trim() : "";
+        const content = `${summary} - ${description}`.slice(0, 300);
 
         events.push({
-            id: uuidv4(),
+            id: generateEventId("calendar", dt.toISOString(), "me", content),
             timestamp: dt.toISOString(),
             source: "calendar",
             actor: "me", // Calendar is usually personal
             type: "calendar.event",
             tags: ["meeting"],
-            content_snippet: `${summary} - ${description}`.slice(0, 300)
+            content_snippet: content
         });
     }
     return events;

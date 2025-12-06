@@ -8,7 +8,7 @@ import Heatmap from "../components/Heatmap";
 import Timeline from "../components/Timeline";
 import DashboardStats from "../components/DashboardStats";
 import EventModal from "../components/EventModal";
-import AIInsightsModal from "../components/AIInsightsModal";
+import AIInsightsWidget from "../components/AIInsightsWidget";
 import HelpModal from "../components/HelpModal";
 import { type EventItem } from "../lib/mockData";
 
@@ -60,7 +60,7 @@ export default function DashboardPage() {
     const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
     const [githubUser, setGithubUser] = useState("");
     const [githubToken, setGithubToken] = useState("");
-    const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+    // const [isAIModalOpen, setIsAIModalOpen] = useState(false); // Removed
     const [actors, setActors] = useState<{ name: string; count: number }[]>([]);
     const [isHelpOpen, setIsHelpOpen] = useState(false);
 
@@ -251,12 +251,6 @@ export default function DashboardPage() {
 
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => setIsAIModalOpen(true)}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-medium rounded-md hover:shadow-md transition-all active:scale-95"
-                    >
-                        <span>✨ AI Insights</span>
-                    </button>
-                    <button
                         onClick={toggleTheme}
                         className="p-2 border border-slate-300 dark:border-slate-600 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-700 dark:text-slate-300"
                         title="Toggle Dark Mode"
@@ -287,30 +281,45 @@ export default function DashboardPage() {
                     <DashboardStats events={filteredEvents} />
 
                     {isGithubModalOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-                            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-                                <h3 className="text-lg font-bold mb-4">Connect GitHub</h3>
-                                <p className="text-sm text-slate-600 mb-4">
-                                    Enter username. Optional: PAT for private repos.
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm transition-opacity">
+                            <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 max-w-md w-full p-6 animate-fade-in-up">
+                                <h3 className="text-lg font-bold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
+                                    <svg height="24" viewBox="0 0 16 16" version="1.1" width="24" aria-hidden="true" className="fill-slate-900 dark:fill-white"><path d="M8 0c4.42 0 8 3.58 8 8a8.01 8.01 0 01-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 010 8c0-4.42 3.58-8 8-8z"></path></svg>
+                                    Connect GitHub
+                                </h3>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+                                    Sync your public commit history. For private repositories, provide a Personal Access Token (PAT).
                                 </p>
                                 <div className="space-y-4">
-                                    <input
-                                        className="w-full border-slate-300 rounded-md shadow-sm text-sm"
-                                        value={githubUser}
-                                        onChange={e => setGithubUser(e.target.value)}
-                                        placeholder="Username"
-                                    />
-                                    <input
-                                        className="w-full border-slate-300 rounded-md shadow-sm text-sm"
-                                        type="password"
-                                        value={githubToken}
-                                        onChange={e => setGithubToken(e.target.value)}
-                                        placeholder="PAT (optional)"
-                                    />
+                                    <div>
+                                        <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">GitHub Username</label>
+                                        <input
+                                            className="w-full border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm p-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-slate-900 dark:focus:ring-white outline-none transition-all"
+                                            value={githubUser}
+                                            onChange={e => setGithubUser(e.target.value)}
+                                            placeholder="e.g. torvalds"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Personal Access Token (Optional)</label>
+                                        <input
+                                            className="w-full border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm p-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-slate-900 dark:focus:ring-white outline-none transition-all"
+                                            type="password"
+                                            value={githubToken}
+                                            onChange={e => setGithubToken(e.target.value)}
+                                            placeholder="ghp_****************"
+                                        />
+                                    </div>
                                 </div>
-                                <div className="mt-6 flex justify-end gap-3">
-                                    <button onClick={() => setIsGithubModalOpen(false)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-md">Cancel</button>
-                                    <button onClick={handleGithubSync} disabled={loading || !githubUser} className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">Sync</button>
+                                <div className="mt-8 flex justify-end gap-3">
+                                    <button onClick={() => setIsGithubModalOpen(false)} className="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors font-medium">Cancel</button>
+                                    <button
+                                        onClick={handleGithubSync}
+                                        disabled={loading || !githubUser}
+                                        className="px-4 py-2 text-sm bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg hover:opacity-90 disabled:opacity-50 font-bold transition-all shadow-md"
+                                    >
+                                        {loading ? "Syncing..." : "Sync Profile"}
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -323,12 +332,15 @@ export default function DashboardPage() {
                                 <select
                                     value={days}
                                     onChange={(e) => setDays(Number(e.target.value))}
-                                    className="form-select text-sm border-slate-300 rounded-md shadow-sm"
+                                    className="form-select text-sm border-slate-300 rounded-md shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                                     disabled={loading}
                                 >
                                     <option value={7}>Last 7 days</option>
                                     <option value={14}>Last 14 days</option>
                                     <option value={30}>Last 30 days</option>
+                                    <option value={90}>Last 3 Months</option>
+                                    <option value={180}>Last 6 Months</option>
+                                    <option value={365}>Last 1 Year</option>
                                 </select>
                             </div>
                         </div>
@@ -349,13 +361,14 @@ export default function DashboardPage() {
                 </div>
 
                 <aside className="lg:col-span-1 space-y-6">
+                    <AIInsightsWidget events={filteredEvents} />
                     <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
                         <h3 className="font-semibold text-slate-800 dark:text-white mb-4">Filters</h3>
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Source</label>
                                 <select
-                                    className="w-full text-sm border-slate-300 rounded-md shadow-sm"
+                                    className="w-full text-sm border-slate-300 rounded-md shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                                     value={filterSource}
                                     onChange={(e) => setFilterSource(e.target.value)}
                                 >
@@ -370,7 +383,7 @@ export default function DashboardPage() {
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Actor</label>
                                 <select
-                                    className="w-full text-sm border-slate-300 rounded-md shadow-sm"
+                                    className="w-full text-sm border-slate-300 rounded-md shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                                     value={filterActor}
                                     onChange={(e) => setFilterActor(e.target.value)}
                                 >
@@ -421,11 +434,13 @@ export default function DashboardPage() {
                 events={modalEvents}
             />
 
-            <AIInsightsModal
-                isOpen={isAIModalOpen}
-                onClose={() => setIsAIModalOpen(false)}
-                events={filteredEvents}
+            <EventModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={modalTitle}
+                events={modalEvents}
             />
+
         </Layout>
     );
 }
