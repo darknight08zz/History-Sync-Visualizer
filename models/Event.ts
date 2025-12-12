@@ -9,6 +9,12 @@ const EventSchema = new Schema({
     type: { type: String },
     tags: { type: [String], default: [] },
     content_snippet: { type: String },
+    analysis: {
+        impact_score: { type: Number }, // 1-10
+        impact_label: { type: String }, // "High", "Medium", "Low"
+        sentiment: { type: String },    // "Positive", "Neutral", "Frustrated"
+        summary: { type: String }       // One-liner
+    }
 }, {
     timestamps: true // adds createdAt, updatedAt
 });

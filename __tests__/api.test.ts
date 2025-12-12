@@ -17,6 +17,32 @@ jest.mock("../lib/store", () => ({
     getEventsLastNDays: jest.fn(() => []),
 }));
 
+// Mock mongodb connection
+jest.mock("../lib/mongodb", () => jest.fn().mockResolvedValue(true));
+
+// Mock Event model
+jest.mock("../models/Event", () => {
+    const mockLean = jest.fn().mockResolvedValue([
+        {
+            id: "test-id-1",
+            timestamp: new Date(),
+            source: "git",
+            actor: "me",
+            type: "code.commit",
+            tags: ["feature"],
+            content_snippet: "test commit"
+        }
+    ]);
+    const mockSort = jest.fn().mockReturnValue({ lean: mockLean });
+    const mockFind = jest.fn().mockReturnValue({ sort: mockSort });
+    return {
+        __esModule: true,
+        default: {
+            find: mockFind
+        }
+    };
+});
+
 // Mock queue to avoid background processing issues
 jest.mock("../lib/queue", () => ({
     createJob: jest.fn(() => ({ id: "test-job-id", status: "pending" })),

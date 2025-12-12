@@ -40,12 +40,13 @@ The goal is to help developers, students, and knowledge workers discover pattern
 ## 🖼 Demo Screenshots
 (Add when ready)
 
-```
+<!-- (Screenshots to be added) -->
+<!-- 
 /assets/heatmap.png
 /assets/timeline.png
 /assets/streaks.png
 /assets/details-pane.png
-```
+-->
 
 ## 🚀 Live Demo
 Frontend: https://your-demo.vercel.app  
@@ -72,8 +73,8 @@ Backend API: https://your-api.example.com
                                 │
                                 ▼
              ┌─────────────────────────────────────────┐
-             │              PostgreSQL DB              │
-             │ events table | aggregates table         │
+             │                MongoDB                  │
+             │       (Mongoose Schemas: Events)        │
              └───────────┬──────────────┬──────────────┘
                          │              │
                          ▼              ▼
@@ -95,7 +96,7 @@ Backend API: https://your-api.example.com
 |------|--------------|
 | Frontend | React, Next.js/Vite, D3.js / visx, TailwindCSS |
 | Backend | Node.js (Express) or Python (FastAPI) |
-| Database | PostgreSQL, TimescaleDB (optional), Redis |
+| Database | MongoDB (Mongoose), Redis (optional) |
 | Workers | BullMQ (Node) or Celery (Python) |
 | Exports | Puppeteer/Playwright for PDF |
 | Deployment | Vercel, Render, Railway, Supabase |
@@ -140,25 +141,16 @@ POST /export/pdf
 ```
 
 ## 📂 Project Structure
-```
 root
 │
-├── backend
-│   ├── ingestors/
-│   ├── normalizers/
-│   ├── workers/
-│   ├── routes/
-│   └── models/
-│
-├── frontend
-│   ├── components/
-│   ├── charts/
-│   ├── pages/
-│   ├── hooks/
-│   └── utils/
-│
-└── assets/
-```
+├── components/     # React UI components (Charts, Widgets, Modals)
+├── lib/            # Shared logic, parsers, and helpers
+├── models/         # Mongoose database schemas
+├── pages/          # Next.js Pages Router
+│   ├── api/        # Backend API endpoints
+│   └── ...         # Frontend routes
+├── public/         # Static assets
+└── styles/         # Global styles & Tailwind config
 
 ## 📥 Installation & Setup
 
@@ -186,9 +178,10 @@ npm start
 Create `.env`:
 
 ```
-DATABASE_URL=postgres://...
-REDIS_URL=redis://...
+MONGODB_URI=mongodb+srv://...
+# REDIS_URL=redis://...
 JWT_SECRET=supersecret
+GEMINI_API_KEY=... (Client-side or Server-side proxy)
 ```
 
 ## 🎯 Usage Guide
@@ -226,5 +219,5 @@ MIT License.
 
 ## 🙏 Acknowledgements
 - D3.js / visx visualization libraries  
-- TimescaleDB for time-series optimization  
+- Mongoose for elegant MongoDB modeling  
 - Public Git & WhatsApp export samples  

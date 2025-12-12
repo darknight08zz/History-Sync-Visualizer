@@ -34,23 +34,44 @@ export default function AIInsightsWidget({ events }: AIInsightsWidgetProps) {
         setLoading(true);
         setError(null);
 
-        try {
-            const res = await fetch("/api/analyze", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ events, apiKey }),
-            });
+        const tryFetch = async (attempt = 1): Promise<void> => {
+            try {
+                const res = await fetch("/api/analyze", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ events, apiKey }),
+                });
 
-            const json = await res.json();
+                if (res.status === 429) {
+                    if (attempt > 3) throw new Error("API Quota exceeded. Please try again later.");
+                    const delay = attempt * 2000; // 2s, 4s, 6s...
+                    setError(`Quota limit hit. Retrying in ${delay / 1000}s...`);
+                    await new Promise(r => setTimeout(r, delay));
+                    return tryFetch(attempt + 1);
+                }
 
-            if (!res.ok) {
-                throw new Error(json.error || "Failed to generate analysis");
+                const json = await res.json();
+                if (!res.ok) throw new Error(json.error || "Failed to generate analysis");
+
+                setAnalysis(json.analysis);
+                setIsExpanded(true);
+                setError(null);
+            } catch (e: any) {
+                const isRateLimit = e.message?.includes("429") || e.message?.includes("Quota") || e.message?.includes("Too Many Requests");
+
+                if (isRateLimit && attempt <= 3) {
+                    const delay = attempt * 2000;
+                    setError(`Quota limit hit. Retrying in ${delay / 1000}s...`);
+                    await new Promise(r => setTimeout(r, delay));
+                    return tryFetch(attempt + 1);
+                }
+
+                setError(e.message);
             }
+        };
 
-            setAnalysis(json.analysis);
-            setIsExpanded(true);
-        } catch (e: any) {
-            setError(e.message);
+        try {
+            await tryFetch();
         } finally {
             setLoading(false);
         }

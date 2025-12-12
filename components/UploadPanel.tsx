@@ -7,9 +7,11 @@ interface UploadPanelProps {
     onUploadComplete?: (events: EventItem[]) => void;
     onConnectGithub: () => void;
     onClearData?: () => void;
+    onAnalyze?: () => void;
+    analysisProgress?: string;
 }
 
-export default function UploadPanel({ onUploadComplete, onConnectGithub, onClearData }: UploadPanelProps) {
+export default function UploadPanel({ onUploadComplete, onConnectGithub, onClearData, onAnalyze, analysisProgress }: UploadPanelProps) {
     const [drag, setDrag] = useState(false);
 
     const handleFile = (file: File | null) => {
@@ -113,7 +115,13 @@ export default function UploadPanel({ onUploadComplete, onConnectGithub, onClear
             <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 p-3 rounded-md border border-slate-100 dark:border-slate-700">
                 <span className="text-xs text-slate-500 dark:text-slate-400">Supported: WhatsApp, Git Log, Telegram JSON, Slack JSON</span>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
+                    {analysisProgress && (
+                        <span className="text-xs font-mono text-amber-600 animate-pulse mr-2">
+                            {analysisProgress}
+                        </span>
+                    )}
+
                     <button
                         onClick={onConnectGithub}
                         className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 text-white text-xs font-medium rounded-md hover:bg-slate-700 transition-colors"
@@ -129,6 +137,17 @@ export default function UploadPanel({ onUploadComplete, onConnectGithub, onClear
                             title="Clear all data"
                         >
                             <span>🗑️ Clear</span>
+                        </button>
+                    )}
+
+                    {onAnalyze && (
+                        <button
+                            onClick={onAnalyze}
+                            disabled={!!analysisProgress}
+                            className="flex items-center gap-2 px-3 py-1.5 border border-amber-200 text-amber-700 bg-amber-50 text-xs font-medium rounded-md hover:bg-amber-100 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Analyze Impact with AI"
+                        >
+                            <span>✨ {analysisProgress ? "Analyzing..." : "Analyze Impact"}</span>
                         </button>
                     )}
                 </div>

@@ -36,12 +36,12 @@ export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
                             <section>
                                 <h3 className="font-semibold text-slate-900 dark:text-white mb-2">📂 Supported Imports</h3>
                                 <ul className="list-disc pl-5 space-y-1">
-                                    <li><strong>Git Logs</strong>: Run <code>git log --pretty=format:"%H|%aI|%s|%an" &gt; gitlog.txt</code></li>
+                                    <li><strong>Git Logs</strong>: Run <code>git log --pretty=format:&quot;%H|%aI|%s|%an&quot; &gt; gitlog.txt</code></li>
                                     <li>
                                         <strong>WhatsApp</strong>: Open Chat &gt; Three Dots &gt; More &gt; Export Chat &gt; Without Media. Upload the <code>.txt</code> file.
                                     </li>
                                     <li>
-                                        <strong>Telegram</strong>: Desktop App &gt; Settings &gt; Advanced &gt; Export Telegram Data &gt; Check "Machine-readable JSON" &gt; Export. Upload <code>result.json</code>.
+                                        <strong>Telegram</strong>: Desktop App &gt; Settings &gt; Advanced &gt; Export Telegram Data &gt; Check &quot;Machine-readable JSON&quot; &gt; Export. Upload <code>result.json</code>.
                                     </li>
                                     <li>
                                         <strong>Slack</strong>: Workspace Settings &gt; Import/Export &gt; Export Data. Upload the channel <code>.json</code> file.

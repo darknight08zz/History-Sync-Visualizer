@@ -37,10 +37,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const summaryObj: Record<string, Record<string, number>> = {};
         const sources = new Set<string>();
 
-        // Limit to last 500 events to avoid token limits if list is huge
+        // Limit to last 30 days to ensure we fit in context window and stay relevant
         const recentEvents = events
-            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-            .slice(0, 500);
+            .filter(e => new Date(e.timestamp) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))
+            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
         recentEvents.forEach(e => {
             const date = e.timestamp.slice(0, 10);
@@ -53,59 +53,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // Construct prompt
         const prompt = `
-        You are a productivity analyst. Analyze the following work log summary for a user.
-        The log contains counts of events (commits, messages, meetings) grouped by date and source.
+        Role: Productivity Analyst. 
+        Task: Analyze this user's work log (daily event counts by source) and provide a professional, encouraging report.
+        
+        Sources: ${Array.from(sources).join(", ")}
 
-        Sources encountered: ${Array.from(sources).join(", ")}
-
-        Daily Activity:
+        Daily Activity Summary (JSON):
         ${JSON.stringify(summaryObj, null, 2)}
 
-        Analyze this productivity data (daily event counts by source) and provide a professional, encouraging, and actionable report.
-        
-        Format the response in cleanly structured Markdown. Use short bullet points and avoid long paragraphs.
+        Output: A concise Markdown report with:
         
         ### **📊 Executive Summary**
-        **[5-6 bullet points. Very concise overview.]**
-        
-        
+        (3-4 bullet points)
         
         ### **📈 Key Trends**
-        - **Peak Performance**: [Day/Time]
-        - **Work-Life Balance**: [1 sentence observation]
-        - **Focus**: [Code vs Chat]
-        - **Consistency**: [Daily/Weekly patterns]
-        - **Collaboration**: [Interaction with others based on communication events]
-        - **Deep Work Periods**: [Observations on sustained activity in specific sources]
-
-
-
-
-        ### **📈 Key Trends**
-        - **Peak Performance**: [Day/Time]
-        - **Work-Life Balance**: [1 sentence observation]
-        - **Focus**: [Code vs Chat]
-        - **Consistency**: [Daily/Weekly patterns]
-        - **Collaboration**: [Interaction with others based on communication events]
-        - **Deep Work Periods**: [Observations on sustained activity in specific sources]
-
-
-
-        ### **📊 Key Insights**
-        - [Insight 1]
-        - [Insight 2]
-        - [Insight 3]
-        - [Insight 4]
-        - [Insight 5]
-        - [Insight 6]
-        
-
+        - **Peak Performance**
+        - **Work-Life Balance**
+        - **Focus**
+        - **Consistency**
         
         ### **💡 Recommendations**
-        - [Actionable Tip 1]
-        - [Actionable Tip 2]
-        - [Actionable Tip 3]
-        - [Actionable Tip 4]
+        (Top 3 actionable tips)
         `;
 
         const result = await model.generateContent(prompt);
@@ -116,6 +84,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     } catch (e: any) {
         console.error("Gemini API Error:", e);
+
+        // Propagate 429 status for client-side handling
+        if (e.message?.includes("429") || e.status === 429 || e.message?.includes("Quota")) {
+            return res.status(429).json({ error: "Too Many Requests", details: e.message });
+        }
 
         // Debug: List available models if 404
         if (e.message.includes("404") || e.message.includes("not found")) {

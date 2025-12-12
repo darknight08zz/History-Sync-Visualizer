@@ -9,6 +9,7 @@ import Timeline from "../components/Timeline";
 import DashboardStats from "../components/DashboardStats";
 import EventModal from "../components/EventModal";
 import AIInsightsWidget from "../components/AIInsightsWidget";
+import AIChatWidget from "../components/AIChatWidget";
 import HelpModal from "../components/HelpModal";
 import { type EventItem } from "../lib/mockData";
 
@@ -225,222 +226,297 @@ export default function DashboardPage() {
         await loadAggregates(days);
     }
 
+    const [analysisProgress, setAnalysisProgress] = useState<string>("");
+
+    async function handleAnalyze() {
+        if (!confirm("This will use your Gemini API key to analyze all CURRENTLY visible events. Continue?")) return;
+
+        const apiKey = localStorage.getItem("gemini_api_key");
+        if (!apiKey) {
+            alert("Please set your Gemini API Key in the AI Insights widget first.");
+            return;
+        }
+
+        setLoading(true);
+        setAnalysisProgress("Starting...");
+
+        try {
+            const allEventIds = filteredEvents.map(e => e.id);
+            if (allEventIds.length === 0) {
+                alert("No events to analyze in current view.");
+                return;
+            }
+
+            // SAFETY: Chunk size 20 to respect token limits per request
+            // DELAY: 2000ms between chunks to respect RPM limits
+            const CHUNK_SIZE = 20;
+            const chunks = [];
+            for (let i = 0; i < allEventIds.length; i += CHUNK_SIZE) {
+                chunks.push(allEventIds.slice(i, i + CHUNK_SIZE));
+            }
+
+            let enrichedCount = 0;
+
+            for (let i = 0; i < chunks.length; i++) {
+                const chunk = chunks[i];
+                setAnalysisProgress(`Analyzing batch ${i + 1}/${chunks.length} (${Math.round((i / chunks.length) * 100)}%)...`);
+
+                try {
+                    const res = await fetch("/api/ai/enrich", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ eventIds: chunk, apiKey })
+                    });
+
+                    if (res.status === 429) {
+                        // Rate limit hit, wait longer and retry this chunk once
+                        setAnalysisProgress(`Rate limited. Cooling down for 10s...`);
+                        await new Promise(r => setTimeout(r, 10000));
+                        i--; // Retry this chunk
+                        continue;
+                    }
+
+                    const json = await res.json();
+                    if (!res.ok) throw new Error(json.error || "Analysis failed");
+                    enrichedCount += (json.count || 0);
+
+                    // Rate limit buffer
+                    await new Promise(r => setTimeout(r, 2000));
+
+                } catch (e: any) {
+                    console.error("Chunk failed", e);
+                    // Continue to next chunk or abort? Let's continue but warn.
+                }
+            }
+
+            alert(`Analysis complete! Enriched ${enrichedCount} events.`);
+            setAnalysisProgress("");
+            await loadAggregates(days);
+        } catch (e: any) {
+            console.error(e);
+            alert("Analysis failed: " + e.message);
+        } finally {
+            setLoading(false);
+            setAnalysisProgress("");
+        }
+    }
+
     return (
-        <Layout>
-            <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 px-1">
-                <div>
+        <>
+            <Layout>
+                <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 px-1">
+                    <div>
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">History Sync Visualizer</h1>
+                            <button
+                                onClick={() => setIsHelpOpen(true)}
+                                className="text-slate-400 hover:text-indigo-500 transition-colors"
+                                title="What is this?"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                                    <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm11.378-3.917c-.89-.777-2.366-.777-3.255 0a.75.75 0 01-.988-1.129c1.454-1.272 3.776-1.272 5.23 0 1.513 1.324 1.513 3.518 0 4.842a3.75 3.75 0 01-.837.552c-.676.328-1.028.774-1.028 1.152v.75a.75.75 0 01-1.5 0v-.75c0-.846.673-1.651 1.46-2.074.282-.152.538-.35.75-.536a2.25 2.25 0 000-2.807zM12 16a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                        <p className="text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
+                            Universal Timeline, Heatmap & Activity Insights
+                            <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-bold uppercase tracking-wider dark:bg-indigo-900/30 dark:text-indigo-300">
+                                v1.0
+                            </span>
+                        </p>
+                    </div>
+
                     <div className="flex items-center gap-3">
-                        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">History Sync Visualizer</h1>
                         <button
-                            onClick={() => setIsHelpOpen(true)}
-                            className="text-slate-400 hover:text-indigo-500 transition-colors"
-                            title="What is this?"
+                            onClick={toggleTheme}
+                            className="p-2 border border-slate-300 dark:border-slate-600 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-700 dark:text-slate-300"
+                            title="Toggle Dark Mode"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                                <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm11.378-3.917c-.89-.777-2.366-.777-3.255 0a.75.75 0 01-.988-1.129c1.454-1.272 3.776-1.272 5.23 0 1.513 1.324 1.513 3.518 0 4.842a3.75 3.75 0 01-.837.552c-.676.328-1.028.774-1.028 1.152v.75a.75.75 0 01-1.5 0v-.75c0-.846.673-1.651 1.46-2.074.282-.152.538-.35.75-.536a2.25 2.25 0 000-2.807zM12 16a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
-                            </svg>
+                            {theme === "light" ? "🌙" : "☀️"}
                         </button>
+                        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+                        <a className="text-xs font-medium px-3 py-1.5 bg-slate-100 border border-slate-300 rounded-md hover:bg-slate-200 transition-colors text-slate-700 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200" href="/api/auth/logout">
+                            Logout
+                        </a>
                     </div>
-                    <p className="text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
-                        Universal Timeline, Heatmap & Activity Insights
-                        <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-bold uppercase tracking-wider dark:bg-indigo-900/30 dark:text-indigo-300">
-                            v1.0
-                        </span>
-                    </p>
-                </div>
+                </header>
 
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={toggleTheme}
-                        className="p-2 border border-slate-300 dark:border-slate-600 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-700 dark:text-slate-300"
-                        title="Toggle Dark Mode"
-                    >
-                        {theme === "light" ? "🌙" : "☀️"}
-                    </button>
-                    <a className="text-xs font-medium px-3 py-1.5 bg-slate-100 border border-slate-300 rounded-md hover:bg-slate-200 transition-colors text-slate-700 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200" href="/api/auth/logout">
-                        Logout
-                    </a>
-                </div>
-            </header>
+                {/* ... Existing Content ... */}
 
-            {/* ... Existing Content ... */}
-
-            <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+                <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
 
 
-            <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4">
-                        <UploadPanel
-                            onUploadComplete={handleUploadRefresh}
-                            onConnectGithub={() => setIsGithubModalOpen(true)}
-                            onClearData={handleClearData}
-                        />
-                    </div>
+                <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    <div className="lg:col-span-2 space-y-6">
+                        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4">
+                            <UploadPanel
+                                onUploadComplete={handleUploadRefresh}
+                                onConnectGithub={() => setIsGithubModalOpen(true)}
+                                onClearData={handleClearData}
+                                onAnalyze={handleAnalyze}
+                                analysisProgress={analysisProgress}
+                            />
+                        </div>
 
-                    <DashboardStats events={filteredEvents} />
+                        <DashboardStats events={filteredEvents} />
 
-                    {isGithubModalOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm transition-opacity">
-                            <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 max-w-md w-full p-6 animate-fade-in-up">
-                                <h3 className="text-lg font-bold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
-                                    <svg height="24" viewBox="0 0 16 16" version="1.1" width="24" aria-hidden="true" className="fill-slate-900 dark:fill-white"><path d="M8 0c4.42 0 8 3.58 8 8a8.01 8.01 0 01-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 010 8c0-4.42 3.58-8 8-8z"></path></svg>
-                                    Connect GitHub
-                                </h3>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
-                                    Sync your public commit history. For private repositories, provide a Personal Access Token (PAT).
-                                </p>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">GitHub Username</label>
-                                        <input
-                                            className="w-full border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm p-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-slate-900 dark:focus:ring-white outline-none transition-all"
-                                            value={githubUser}
-                                            onChange={e => setGithubUser(e.target.value)}
-                                            placeholder="e.g. torvalds"
-                                        />
+                        {isGithubModalOpen && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm transition-opacity">
+                                <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 max-w-md w-full p-6 animate-fade-in-up">
+                                    <h3 className="text-lg font-bold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
+                                        <svg height="24" viewBox="0 0 16 16" version="1.1" width="24" aria-hidden="true" className="fill-slate-900 dark:fill-white"><path d="M8 0c4.42 0 8 3.58 8 8a8.01 8.01 0 01-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 010 8c0-4.42 3.58-8 8-8z"></path></svg>
+                                        Connect GitHub
+                                    </h3>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+                                        Sync your public commit history. For private repositories, provide a Personal Access Token (PAT).
+                                    </p>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">GitHub Username</label>
+                                            <input
+                                                className="w-full border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm p-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-slate-900 dark:focus:ring-white outline-none transition-all"
+                                                value={githubUser}
+                                                onChange={e => setGithubUser(e.target.value)}
+                                                placeholder="e.g. torvalds"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Personal Access Token (Optional)</label>
+                                            <input
+                                                className="w-full border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm p-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-slate-900 dark:focus:ring-white outline-none transition-all"
+                                                type="password"
+                                                value={githubToken}
+                                                onChange={e => setGithubToken(e.target.value)}
+                                                placeholder="ghp_****************"
+                                            />
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Personal Access Token (Optional)</label>
-                                        <input
-                                            className="w-full border-slate-300 dark:border-slate-600 rounded-lg shadow-sm text-sm p-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-slate-900 dark:focus:ring-white outline-none transition-all"
-                                            type="password"
-                                            value={githubToken}
-                                            onChange={e => setGithubToken(e.target.value)}
-                                            placeholder="ghp_****************"
-                                        />
+                                    <div className="mt-8 flex justify-end gap-3">
+                                        <button onClick={() => setIsGithubModalOpen(false)} className="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors font-medium">Cancel</button>
+                                        <button
+                                            onClick={handleGithubSync}
+                                            disabled={loading || !githubUser}
+                                            className="px-4 py-2 text-sm bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg hover:opacity-90 disabled:opacity-50 font-bold transition-all shadow-md"
+                                        >
+                                            {loading ? "Syncing..." : "Sync Profile"}
+                                        </button>
                                     </div>
                                 </div>
-                                <div className="mt-8 flex justify-end gap-3">
-                                    <button onClick={() => setIsGithubModalOpen(false)} className="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors font-medium">Cancel</button>
-                                    <button
-                                        onClick={handleGithubSync}
-                                        disabled={loading || !githubUser}
-                                        className="px-4 py-2 text-sm bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg hover:opacity-90 disabled:opacity-50 font-bold transition-all shadow-md"
+                            </div>
+                        )}
+
+                        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-lg font-semibold text-slate-800 dark:text-white">Heatmap</h2>
+                                <div className="flex items-center gap-3">
+                                    <select
+                                        value={days}
+                                        onChange={(e) => setDays(Number(e.target.value))}
+                                        className="form-select text-sm border-slate-300 rounded-md shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                        disabled={loading}
                                     >
-                                        {loading ? "Syncing..." : "Sync Profile"}
+                                        <option value={7}>Last 7 days</option>
+                                        <option value={14}>Last 14 days</option>
+                                        <option value={30}>Last 30 days</option>
+                                        <option value={90}>Last 3 Months</option>
+                                        <option value={180}>Last 6 Months</option>
+                                        <option value={365}>Last 1 Year</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            {error && (
+                                <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-md border border-red-100">
+                                    {error}
+                                </div>
+                            )}
+
+                            <Heatmap matrix={effectiveMatrix} events={filteredEvents} onCellClick={handleCellClick} theme={theme} />
+                        </div>
+
+                        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+                            <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Activity Timeline</h3>
+                            <Timeline matrix={effectiveMatrix} events={filteredEvents} />
+                        </div>
+                    </div>
+
+                    <aside className="lg:col-span-1 space-y-6">
+                        <AIInsightsWidget events={filteredEvents} />
+                        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+                            <h3 className="font-semibold text-slate-800 dark:text-white mb-4">Filters</h3>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Source</label>
+                                    <select
+                                        className="w-full text-sm border-slate-300 rounded-md shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                        value={filterSource}
+                                        onChange={(e) => setFilterSource(e.target.value)}
+                                    >
+                                        <option>All Sources</option>
+                                        <option value="git">Git</option>
+                                        <option value="whatsapp">WhatsApp</option>
+                                        <option value="slack">Slack</option>
+                                        <option value="discord">Discord</option>
+                                        <option value="calendar">Calendar</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Actor</label>
+                                    <select
+                                        className="w-full text-sm border-slate-300 rounded-md shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                        value={filterActor}
+                                        onChange={(e) => setFilterActor(e.target.value)}
+                                    >
+                                        <option>All Actors</option>
+                                        {actors.map(a => (
+                                            <option key={a.name} value={a.name}>{a.name} ({a.count})</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tags</label>
+                                    <input
+                                        className="w-full text-sm border-slate-300 rounded-md shadow-sm"
+                                        placeholder="e.g. bugfix"
+                                        value={filterTag}
+                                        onChange={(e) => setFilterTag(e.target.value)}
+                                    />
+                                </div>
+                                <div>
+                                    <button
+                                        className="w-full px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-md shadow-sm hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                        onClick={() => {
+                                            const params = new URLSearchParams();
+                                            params.set("days", days.toString());
+                                            if (filterSource !== "All Sources") params.set("source", filterSource);
+                                            if (filterTag) params.set("tag", filterTag);
+                                            if (filterActor !== "All Actors") params.set("actor", filterActor);
+
+                                            window.open(`/api/export/pdf?${params.toString()}`, "_blank");
+                                        }}
+                                    >
+                                        Export PDF
                                     </button>
                                 </div>
                             </div>
                         </div>
-                    )}
+                    </aside>
+                </section>
 
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-lg font-semibold text-slate-800 dark:text-white">Heatmap</h2>
-                            <div className="flex items-center gap-3">
-                                <select
-                                    value={days}
-                                    onChange={(e) => setDays(Number(e.target.value))}
-                                    className="form-select text-sm border-slate-300 rounded-md shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-                                    disabled={loading}
-                                >
-                                    <option value={7}>Last 7 days</option>
-                                    <option value={14}>Last 14 days</option>
-                                    <option value={30}>Last 30 days</option>
-                                    <option value={90}>Last 3 Months</option>
-                                    <option value={180}>Last 6 Months</option>
-                                    <option value={365}>Last 1 Year</option>
-                                </select>
-                            </div>
-                        </div>
+                <footer className="text-sm text-slate-400 text-center py-8">
+                    Built with React + Tailwind — History Sync Visualizer
+                </footer>
 
-                        {error && (
-                            <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-md border border-red-100">
-                                {error}
-                            </div>
-                        )}
+                <EventModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    title={modalTitle}
+                    events={modalEvents}
+                />
 
-                        <Heatmap matrix={effectiveMatrix} events={filteredEvents} onCellClick={handleCellClick} theme={theme} />
-                    </div>
+            </Layout>
 
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Activity Timeline</h3>
-                        <Timeline matrix={effectiveMatrix} />
-                    </div>
-                </div>
-
-                <aside className="lg:col-span-1 space-y-6">
-                    <AIInsightsWidget events={filteredEvents} />
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-                        <h3 className="font-semibold text-slate-800 dark:text-white mb-4">Filters</h3>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Source</label>
-                                <select
-                                    className="w-full text-sm border-slate-300 rounded-md shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-                                    value={filterSource}
-                                    onChange={(e) => setFilterSource(e.target.value)}
-                                >
-                                    <option>All Sources</option>
-                                    <option value="git">Git</option>
-                                    <option value="whatsapp">WhatsApp</option>
-                                    <option value="slack">Slack</option>
-                                    <option value="discord">Discord</option>
-                                    <option value="calendar">Calendar</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Actor</label>
-                                <select
-                                    className="w-full text-sm border-slate-300 rounded-md shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-                                    value={filterActor}
-                                    onChange={(e) => setFilterActor(e.target.value)}
-                                >
-                                    <option>All Actors</option>
-                                    {actors.map(a => (
-                                        <option key={a.name} value={a.name}>{a.name} ({a.count})</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tags</label>
-                                <input
-                                    className="w-full text-sm border-slate-300 rounded-md shadow-sm"
-                                    placeholder="e.g. bugfix"
-                                    value={filterTag}
-                                    onChange={(e) => setFilterTag(e.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <button
-                                    className="w-full px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-md shadow-sm hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                    onClick={() => {
-                                        const params = new URLSearchParams();
-                                        params.set("days", days.toString());
-                                        if (filterSource !== "All Sources") params.set("source", filterSource);
-                                        if (filterTag) params.set("tag", filterTag);
-                                        if (filterActor !== "All Actors") params.set("actor", filterActor);
-
-                                        window.open(`/api/export/pdf?${params.toString()}`, "_blank");
-                                    }}
-                                >
-                                    Export PDF
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </aside>
-            </section>
-
-            <footer className="text-sm text-slate-400 text-center py-8">
-                Built with React + Tailwind — History Sync Visualizer
-            </footer>
-
-            <EventModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                title={modalTitle}
-                events={modalEvents}
-            />
-
-            <EventModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                title={modalTitle}
-                events={modalEvents}
-            />
-
-        </Layout>
+            <AIChatWidget contextFilter={{ source: filterSource, actor: filterActor }} />
+        </>
     );
 }

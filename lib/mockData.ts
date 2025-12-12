@@ -7,6 +7,12 @@ export type EventItem = {
     type: string;
     tags: string[];
     content_snippet: string;
+    analysis?: {
+        impact_score?: number;
+        impact_label?: string;
+        sentiment?: string;
+        summary?: string;
+    };
 };
 
 
